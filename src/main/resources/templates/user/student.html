@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生请假</title>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/normalize.css"/>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/demo_styles.css">
+    <link rel="stylesheet" href="css/demo4.css">
+    <link rel="stylesheet" type="text/css" href="css/default2.css">
+    <script src="js/vendor/modernizr-2.6.2.min.js"></script>
+    <!--layui.css-->
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <!--layui.js-->
+    <script src="../layui/layui.js"></script>
+    <!--layui部分js代码-->
+    <script>
+        //引用当前页用到的layui模块
+        layui.use(['layer', 'form', 'laydate'], function () {
+            var layer = layui.layer,
+                form = layui.form,
+                laydate = layui.laydate;
+
+            //日期范围
+            laydate.render({
+                elem: '#test1'
+                , range: '~'
+                , format: 'yyyy年MM月dd日'
+                , done: function (value, date, endDate) {
+                    console.log(value); //得到日期生成的值，如：2017-08-18
+                    console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
+                    console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
+                }
+            });
+
+            //监听提交
+            form.on('submit(formDemo)', function (data) {
+                layer.msg(提交成功);
+                return false;
+            });
+            var name = "[[${student.name}]]"
+            layer.msg('你好, ' + name);
+        });
+    </script>
+
+</head>
+<body class="dm-demo1">
+<br>
+<br>
+<br>
+
+<h2>学生请假</h2>
+<div class="htmleaf-container">
+
+    <!--四个模块-->
+    <nav class="nav clearfix">
+        <button class="nav-el" id="el-topleft" data-id="ov-topleft"><span class="icon-heart" title="请假记录"></span></button>
+        <button class="nav-el" id="el-topright" data-id="ov-topright"><span class="icon-cloud" title="申请请假"></span></button>
+        <button class="nav-el" id="el-btmleft" data-id="ov-btmleft"><span class="icon-location" title="教师联系方式"></span></button>
+        <button class="nav-el" id="el-btmright" data-id="ov-btmright"><span class="icon-search" title="修改联系方式"></span></button>
+    </nav>
+    <!--模块中的内容-->
+    <!--内容一  ---  时间轴,展示最近五个请假记录-->
+    <section class="overlay" id="ov-topleft">
+        <div class="wrap">
+            <h1>请假记录</h1><br><br><br>
+            <!--TODO-->
+            <!--时间轴的请假记录-->
+            <ul class="layui-timeline" id="list">
+
+                <!--每一次请假记录-->
+                <li class="layui-timeline-item" th:each="info : ${vacates}">
+                    <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                    <div class="layui-timeline-content layui-text">
+                        <h3 class="layui-timeline-title" style="color: yellow" th:text="${info.time}"></h3>
+                        <!--${#dates.format(info.time, 'yyyy-MM-dd')}-->
+                        <p style="color: white">
+                            <sapn font-size="16px">请假原因:</sapn>
+                            [[${info.reason}]]
+                        </p>
+                        <p>[[${info.cycle}]]</p>
+                    </div>
+                </li>
+
+                <!--查看更多-->
+                <li class="layui-timeline-item">
+                    <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                    <div class="layui-timeline-content layui-text" style="color: white">
+                        <div class="layui-timeline-title"></div>
+                        <a th:href="@{/user/list}" style="color: orangered" th:size="9px"> 查看更多</a>
+
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <button class="close"><span class="mfg-cancel"></span></button>
+    </section>
+    <!--内容二 ---   申请请假的表单-->
+    <section class="overlay" id="ov-topright">
+        <div class="wrap">
+            <h1>请假申请</h1><br>
+            <div style="background-color: #1a242f ">
+                <!--todo  改了提交方式-->
+                <form class="layui-form-pane" action="/apply" method="post">
+
+                    <!--请假天数-->
+                    <div class="layui-form-item">
+                        <label class="layui-form-label" style="color: #0C0C0C">请假天数</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="days" required lay-verify="required" placeholder="请输入请假天数"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                        <div class="layui-form-mid layui-word-aux">包括开始与结束当天</div>
+                    </div>
+                    <!--请假时间范围-->
+                    <div class="layui-inline">
+                        <label class="layui-form-label" style="color: black" th:size="10px">日期范围</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="range" required lay-verify="required" placeholder="请输入标题"
+                                   autocomplete="off" class="layui-input" id="test1">
+                        </div>
+                    </div>
+                    <br>
+                    <br>
+                    <!--请假理由-->
+                    <div class="layui-form-item layui-form-text">
+                        <label class="layui-form-label" style="color: #0C0C0C">请假理由</label>
+                        <div class="layui-input-block">
+                            <textarea name="reason" placeholder="请输入请假理由" class="layui-textarea"></textarea>
+                        </div>
+                    </div>
+                    <!--提交-->
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <button class="close"><span class="mfg-cancel"></span></button>
+    </section>
+    <!--内容三 ----  老师联系方式-->
+    <section class="overlay" id="ov-btmleft">
+        <div class="wrap">
+            <h1>负责老师</h1>
+            <!--TODO-->
+            <table class="layui-table">
+                <colgroup>
+                    <col width="150">
+                    <col width="200">
+                    <col>
+                </colgroup>
+                <thead>
+                <tr>
+                    <th>教师名</th>
+                    <th>办公室</th>
+                    <th>手机号</th>
+                    <th>email</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!--一个班主任,一个辅导员-->
+                <tr th:each="teacher : ${student.teacher}">
+                    <td th:text="${teacher.name}"></td>
+                    <td th:text="${teacher.office}"></td>
+                    <td th:text="${teacher.telephone}"></td>
+                    <td th:text="${teacher.email}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button class="close"><span class="mfg-cancel"></span></button>
+    </section>
+    <!--内容四  ---   修改个人联系方式-->
+    <section class="overlay" id="ov-btmright">
+        <div class="wrap">
+            <h1>修改联系方式</h1><br>
+            <br>
+            <div style="background-color: #1a242f ">
+                <form class="layui-form-pane" action="/editInfo">
+
+                    <!--修改电话 -->
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label" style="color: #0C0C0C">手机</label>
+                            <div class="layui-input-inline">
+                                <input type="tel" name="telephone" lay-verify="required|phone" autocomplete="off"
+                                       class="layui-input">
+                            </div>
+                        </div>
+                        <br>
+
+                        <!--修改邮箱-->
+                        <div class="layui-inline">
+                            <label class="layui-form-label" style="color: #0C0C0C">邮箱</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="email" lay-verify="email" autocomplete="off"
+                                       class="layui-input">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!--提交-->
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <button class="close"><span class="mfg-cancel"></span></button>
+    </section>
+</div>
+<script src="js/vendor/jquery-1.10.2.min.js"></script>
+<script src="js/plugins.js"></script>
+<script src="js/demo.js"></script>
+</body>
+</html>

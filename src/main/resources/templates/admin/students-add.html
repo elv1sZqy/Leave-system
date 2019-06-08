@@ -1,0 +1,165 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<link href="/js/kindeditor-4.1.10/themes/default/default.css" type="text/css" rel="stylesheet">
+<script type="text/javascript" charset="utf-8" src="/js/kindeditor-4.1.10/kindeditor-all-min.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/kindeditor-4.1.10/lang/zh_CN.js"></script>
+<style type="text/css">
+    .teacherInfo {
+        display: none;
+    }
+
+</style>
+
+<div style="padding:10px 10px 10px 10px">
+    <form id="studentAddForm" enctype="multipart/form-data" method="post" action="/admin/addStudents">
+        <table cellpadding="5">
+            <tr>
+                <td>年级:</td>
+                <td><input class="easyui-textbox" type="text" name="grade" id="grade" data-options="required:true"
+                           style="width: 100px;"></input></td>
+            </tr>
+            <tr>
+                <td>班级名称:</td>
+                <!--todo name 改成了gname-->
+                <td><input onchange="checkGrade()" type="text" id="gname"
+                           name="gname" data-options="required:true" style="width: 100px;"></input></td>
+            </tr>
+
+            <tr class="teacherInfo">
+                <td>教师ID:</td>
+                <td><input class="easyui-textbox" type="text" name="tid" value="1" style="width: 100px;"></input></td>
+            </tr>
+            <tr class="teacherInfo">
+                <td>班主任名称:</td>
+                <td><input class="easyui-textbox" type="text" name="name" style="width: 100px;"></input></td>
+            </tr>
+            <tr class="teacherInfo">
+                <td>班主任密码:</td>
+                <td><input class="easyui-textbox" type="text" name="passWord" style="width: 100px;"></input></td>
+            </tr>
+            <tr class="teacherInfo">
+                <td>邮箱:</td>
+                <td><input class="easyui-textbox" type="text" name="email" style="width: 100px;"></input></td>
+            </tr>
+            <tr class="teacherInfo">
+                <td>电话:</td>
+                <td><input class="easyui-textbox" type="text" name="telephone"  style="width: 100px;"></input></td>
+            </tr>
+            <tr class="teacherInfo">
+                <td>办公室:</td>
+                <td><input class="easyui-textbox" type="text" name="office"  style="width: 100px;"></input></td>
+            </tr>
+
+
+            <tr>
+                <td>上传excel:</td>
+                <td>
+                    <input type="file" name="file" id="file">
+                </td>
+            </tr>
+        </table>
+    </form>
+    <div th:text="${msg}"></div>
+    <progress id="progressBar" value="0" max="100">
+
+    </progress>
+
+    <span id="percentage"></span>
+    <div style="padding:5px">
+        <a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitForm()">提交</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton" onclick="clearForm()">重置</a>
+    </div>
+</div>
+<script type="text/javascript">
+
+    //当插入数据的班级不存在时,要求继续插入教师信息
+
+
+    function checkGrade() {
+
+        var grade = $("#grade").val();
+        var gname = $("#gname").val();
+        $.ajax({
+            url:"/admin/checkGrade",    //请求的url地址
+            dataType:"json",   //返回格式为json
+            async:true,//请求是否异步，默认为异步，这也是ajax重要特性
+            data:{"grade":grade,"gname":gname},    //参数值
+            type:"GET",   //请求方式
+            success:function(data){
+                //数据库不存在该班级
+                if (data == "404"){
+                    var arr=[2,3,4,5,6,7,8]
+                    for (i in arr){
+                        var root=document.getElementsByClassName("teacherInfo")[i];
+                        root.style.cssText="display: block;";
+                    }
+                }
+                //存在的情况
+                else{
+                    var arr=[2,3,4,5,6,7,8]
+                    for (i in arr){
+                        var root=document.getElementsByClassName("teacherInfo")[i];
+                        root.style.cssText="display: none;";
+                    }
+                }
+            }
+        });
+    }
+
+    //提交表单
+    function submitForm() {
+        //有效性验证
+        if (!$('#studentAddForm').form('validate')) {
+            $.messager.alert('提示', '表单还未填写完成!');
+            return;
+        }
+        //获得表单中数据
+        var form1 = document.getElementById("studentAddForm");
+        //file对象
+        var fileObj = document.getElementById("file").files[0]; // js 获取文件对象
+
+
+        // FormData 对象
+        var form = new FormData(form1);
+        form.append("file", fileObj);                           // 文件对象
+
+        // XMLHttpRequest 对象
+        var xhr = new XMLHttpRequest();
+        //方式,路径,异步处理
+        xhr.open("post", "/admin/addStudents", true);
+
+        xhr.onload = function () {
+            var v = xhr.responseText;
+            alert(v);
+        };
+
+        xhr.upload.addEventListener("progress", progressFunction, false);
+
+        xhr.send(form);
+
+
+    }
+
+    function progressFunction(evt) {
+
+        var progressBar = document.getElementById("progressBar");
+
+        var percentageDiv = document.getElementById("percentage");
+
+        if (evt.lengthComputable) {
+
+            progressBar.max = evt.total;
+
+            progressBar.value = evt.loaded;
+
+            percentageDiv.innerHTML = Math.round(evt.loaded / evt.total * 100) + "%";
+
+        }
+
+    }
+
+    function clearForm() {
+        $('#studentAddForm').form('reset');
+        itemAddEditor.html('');
+    }
+</script>
+</html>

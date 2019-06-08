@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh" xmlns:th="www.thymeleaf.org">
+<link>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生请假</title>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <!--用th:@href 防止路径变了 找不到资源 出现404-->
+    <link rel="stylesheet" type="text/css" th:href="@{/css/normalize.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/demo_styles.css}">
+    <link rel="stylesheet" th:href="@{/css/demo1.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/default2.css}">
+    <script th:src="@{/js/vendor/modernizr-2.6.2.min.js}"></script>
+    <!--layui.css-->
+    <link rel="stylesheet" th:href="@{/webjars\layui\2.4.5\css\layui.css}">
+    <!--layui.js-->
+    <script th:src="@{/webjars/layui/2.4.5/layui.js}" ></script>
+    <!--layui部分js代码-->
+    <script>
+        //引用当前页用到的layui模块
+        layui.use(['layer', 'form', 'laydate'], function () {
+            var layer = layui.layer,
+                form = layui.form,
+                laydate = layui.laydate;
+
+            //执行一个laydate实例
+            laydate.render({
+                elem: '#test1' //指定元素
+            });
+
+            //监听提交
+            form.on('submit(formDemo)', function (data) {
+                layer.msg(JSON.stringify(data.field));
+                return false;
+            });
+            var name = "[[${session.teacher.name}]]"
+            layer.msg(name + "老师,您好");
+        });
+    </script>
+</head>
+<body class="dm-demo3">
+<div class="htmleaf-container">
+
+    <!--四个模块-->
+    <nav class="nav clearfix">
+        <button class="nav-el" id="el-topleft" data-id="ov-topleft" title="请假记录"><span class="icon-cup"></span></button>
+        <button class="nav-el" id="el-topright" data-id="ov-topright"><span class="icon-key"></span></button>
+        <button class="nav-el" id="el-btmleft" data-id="ov-btmleft"><span class="icon-tag"></span></button>
+        <button class="nav-el" id="el-btmright" data-id="ov-btmright"><span class="icon-sound"></span></button>
+    </nav>
+
+    <!--第一  当前本班需要审核的请假请求  -->
+    <section class="overlay" id="ov-topleft">
+        <div class="wrap">
+            <h1>待处理请假</h1><br><br><br>
+            <!--时间轴的请假记录-->
+            <ul class="layui-timeline" id="list">
+
+                <!--每一次请假记录-->
+                <li class="layui-timeline-item" th:each="info : ${vacateIsZero}">
+                    <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                    <div class="layui-timeline-content layui-text">
+                        <h3 class="layui-timeline-title" style="color: yellow"
+                            th:text="${info.time + info.name +'('+info.sid +')'}"></h3>
+                        <!--${#dates.format(info.time, 'yyyy-MM-dd')}-->
+                        <p style="color: white">
+                            <sapn font-size="16px">请假原因:</sapn>
+                            [[${info.reason}]]
+                        </p>
+                        <p style="color: #ffc90b">[[${info.days}]]天</p>
+                        <p style="color: #ffc90b">[[${info.cycle}]]</p>
+                        <p><a th:href="@{'/adopt/' + ${info.id} +'/1'}" style="color: #ff6718">准假</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a th:href="@{'/adopt/' + ${info.id} +'/2'}" style="color: #ff6718">不准假</a></p>
+                    </div>
+                </li>
+
+            </ul>
+        </div>
+
+        <button class="close"><span class="mfg-cancel"></span></button>
+        <button class="close"><span class="mfg-cancel"></span></button>
+    </section>
+    <!--第二  全班学生信息-->
+    <section class="overlay" id="ov-topright">
+        <div class="wrap">
+            <h1>学生信息</h1>
+            <!--TODO-->
+            <table class="layui-table">
+                <colgroup>
+                    <col width="100">
+                    <col width="150">
+                    <col>
+                </colgroup>
+                <thead>
+                <tr>
+                    <th>学号</th>
+                    <th>姓名</th>
+                    <th>宿舍号</th>
+                    <th>手机</th>
+                    <th>邮箱</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="student : ${session.teacher.students}">
+                    <td th:text="${student.sid}"></td>
+                    <td th:text="${student.name}"></td>
+                    <td th:text="${student.dormNum}"></td>
+                    <td th:text="${student.telephone}"></td>
+                    <td th:text="${student.email}"></td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <button class="close"><span class="mfg-cancel"></span></button>
+    </section>
+    <!--第三  本班所有请假信息(已经通过申请的)-->
+    <section class="overlay" id="ov-btmleft">
+        <div class="wrap">
+            <h1>请假历史</h1>
+            <!--TODO-->
+            <table class="layui-table">
+                <colgroup>
+                    <col width="100">
+                    <col width="100">
+                    <col width="200">
+                    <col width="200">
+                    <col width="400">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th>学号</th>
+                    <th>姓名</th>
+                    <th>申请日期</th>
+                    <th>请假理由</th>
+                    <th>请假日期</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="info : ${vacateIsPass}">
+                    <td th:text="${info.sid}"></td>
+                    <td th:text="${info.name}"></td>
+                    <td th:text="${info.time}"></td>
+                    <td th:text="${info.reason}"></td>
+                    <td th:text="${info.cycle}"></td>
+                </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <button class="close"><span class="mfg-cancel"></span></button>
+    </section>
+    <!--第四  向上的联系方式-->
+    <section class="overlay" id="ov-btmright">
+        <div class=" wrap">
+        <h1>辅导员联系方式</h1>
+        <table class="layui-table">
+            <colgroup>
+                <col width="100">
+                <col width="100">
+                <col width="200">
+                <col width="200">
+            </colgroup>
+            <thead>
+            <tr>
+                <th>工号</th>
+                <th>姓名</th>
+                <th>联系方式</th>
+                <th>办公室</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="info : ${session.teacher.assistant}">
+                <td th:text="${info.aid}"></td>
+                <td th:text="${info.name}"></td>
+                <td th:text="${info.telephone}"></td>
+                <td th:text="${info.office}"></td>
+            </tr>
+
+            </tbody>
+        </table>
+</div>
+
+<button class="close"><span class="mfg-cancel"></span></button>
+</section>
+
+</div>
+
+<script th:src="@{/js/vendor/jquery-1.10.2.min.js}"></script>
+<script th:src="@{/js/plugins.js}"></script>
+<script th:src="@{/js/demo.js}"></script>
+</body>
+</html>

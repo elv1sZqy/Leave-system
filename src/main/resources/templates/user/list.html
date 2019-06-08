@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html  xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>请假列表</title>
+    <link rel="stylesheet" href="../layui/css/layui.css" media="all">
+</head>
+<body>
+
+<table id="demo" lay-filter="test"></table>
+<script src="../layui/layui.js"></script>
+<script th:inline="javascript">
+    layui.use('table', function(){
+        var table = layui.table;
+        var id  = '[[${session.sid}]]'
+
+        //第一个实例
+        table.render({
+            elem: '#demo'
+            // ,height: 312
+            ,url: '/get/'+id  //数据接口
+            ,page: true //开启分页
+            ,toolbar: '#toolbarDemo'
+            ,title: '请假列表'
+            ,cols: [[ //表头
+                // {type: 'checkbox', fixed: 'left'},
+                {field: 'id', title: 'ID', width:80, sort: true, fixed: 'left'}
+                ,{field: 'time', title: '请假时间', width:200,sort: true}
+                ,{field: 'reason', title: '理由', width:200}
+                ,{field: 'cycle', title: '请假范围', width:300}
+            ]]
+        });
+        //监听行单击事件（单击事件为：rowDouble）
+        table.on('row(test)', function(obj){
+            var data = obj.data;
+
+            layer.alert(data.reason, {
+                title: '请假理由：'
+            });
+
+            //标注选中样式
+            obj.tr.addClass('layui-table-click').siblings().removeClass('layui-table-click');
+        });
+
+    });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>泰山学院请假后台管理系统</title>
+    <link rel="stylesheet" type="text/css" href="../js/jquery-easyui-1.4.1/themes/gray/easyui.css"/>
+    <link rel="stylesheet" type="text/css" href="../js/jquery-easyui-1.4.1/themes/icon.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/default.css"/>
+    <script type="text/javascript" src="../js/jquery-easyui-1.4.1/jquery.min.js"></script>
+    <script type="text/javascript" src="../js/jquery-easyui-1.4.1/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="../js/jquery-easyui-1.4.1/locale/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="../js/common.js"></script>
+    <style type="text/css">
+        .content {
+            padding: 10px 10px 10px 10px;
+        }
+    </style>
+</head>
+<body class="easyui-layout">
+<!-- 头部标题 -->
+<div data-options="region:'north',border:false" style="height:60px; padding:5px; background:#F3F3F3">
+    <span class="northTitle">泰山学院请假后台管理系统</span>
+    <span class="loginInfo">登录用户：admin&nbsp;&nbsp;姓名：管理员&nbsp;&nbsp;角色：系统管理员</span>
+</div>
+<!--侧边菜单栏-->
+<div data-options="region:'west',title:'菜单',split:true" style="width:180px;">
+    <ul id="menu" class="easyui-tree" style="margin-top: 10px;margin-left: 5px;">
+        <li>
+            <span th:text="${grades[0].grade} + '级请假管理  '"></span>
+            <ul th:each="info : ${grades}">
+                <li data-options="attributes:{'url':'admin/vacate-list'  }" id="className">[[${info.name}]]</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+<!--中间展示区-->
+<!--首页-->
+<!--中间展示区-->
+<div data-options="region:'center',title:''">
+    <div id="tabs" class="easyui-tabs">
+        <div title="首页" style="padding:20px;">
+            <table class="easyui-datagrid" id="itemList" title="待处理"
+                   rownumbers="true"
+                   data-options="singleSelect:false,
+       collapsible:true,
+       pagination:true,
+       url:'/pending',
+       method:'post',
+       pageSize:10,
+       remoteSort:false,
+       toolbar:toolbar">
+                <thead>
+                <tr>
+                    <th data-options="field:'ck',checkbox:true"></th>
+                    <th sortable="true" sorter="numberSort" data-options="field:'id',width:60">请假号</th>
+                    <th data-options="field:'sid',width:60">学号</th>
+                    <th data-options="field:'name',width:60">姓名</th>
+                    <th data-options="field:'time',width:200">请假时间</th>
+                    <th data-options="field:'cycle',width:300">请假范围</th>
+                    <th data-options="field:'reason',width:300">请假原因</th>
+                </tr>
+                </thead>
+            </table>
+            <!--<div id="itemEditWindow" class="easyui-window" title="编辑商品"-->
+            <!--data-options="modal:true,closed:true,iconCls:'icon-save',href:''"-->
+            <!--style="width:80%;height:80%;padding:10px;">-->
+            <!--</div>-->
+
+            <script>
+
+                function numberSort(a, b) {
+                    var number1 = parseFloat(a);
+                    var number2 = parseFloat(b);
+
+                    return (number1 > number2 ? 1 : -1);
+                }
+
+                //获得选中对象的id
+                function getSelectionsIds() {
+                    var itemList = $("#itemList");
+                    var sels = itemList.datagrid("getSelections");
+                    var ids = [];
+                    for (var i in sels) {
+                        ids.push(sels[i].id);
+                    }
+                    ids = ids.join(",");
+                    return ids;
+                }
+
+                var toolbar = [
+                    {
+                        text: '同意',
+                        iconCls: 'icon-edit',
+                        handler: function () {
+                            var ids = getSelectionsIds();
+                            if (ids.length == 0) {
+                                $.messager.alert('提示', '未选中请求!');
+                                return;
+                            }
+                            $.messager.confirm('确认', '确定同意ID为 ' + ids + ' 的请假吗？', function (r) {
+                                if (r) {
+                                    var params = {"ids": ids};
+                                    $.post(
+                                        "/assistant/adopt/5",
+                                        params,
+                                        function (data) {
+                                            // if (data.status == 200) {
+                                            if (data == 200) {
+                                                $.messager.alert('提示', '批量处理请求成功!', undefined, function () {
+                                                    $("#itemList").datagrid("reload");
+                                                });
+                                            }
+                                        });
+                                }
+                            });
+                        }
+                    }, {
+                        text: '不同意',
+                        iconCls: 'icon-cancel',
+                        handler: function () {
+                            var ids = getSelectionsIds();
+                            if (ids.length == 0) {
+                                $.messager.alert('提示', '未选中请求!');
+                                return;
+                            }
+                            $.messager.confirm('确认', '确定拒绝ID为 ' + ids + ' 的请求吗？', function (r) {
+                                if (r) {
+                                    var params = {"ids": ids};
+                                    $.post(
+                                        "/assistant/adopt/4",
+                                        params,
+                                        function (data) {
+                                            // if (data.status == 200) {
+                                            if (data == 200) {
+                                                $.messager.alert('提示', '批量拒绝成功!', undefined, function () {
+                                                    $("#itemList").datagrid("reload");
+                                                });
+                                            }
+                                        });
+                                }
+                            });
+                        }
+                    }];
+            </script>
+        </div>
+    </div>
+</div>
+<!-- 页脚信息 -->
+<div data-options="region:'south',border:false"
+     style="height:20px; background:#F3F3F3; padding:2px; vertical-align:middle;">
+    <span id="sysVersion">系统版本：V1.0</span>
+    <span id="nowTime"></span>
+</div>
+<!--树的js代码-->
+<script type="text/javascript">
+    $(function () {
+        $('#menu').tree({
+            onClick: function (node) {
+                if ($('#menu').tree("isLeaf", node.target)) {
+                    var tabs = $("#tabs");
+                    var tab = tabs.tabs("getTab", node.text);
+                    if (tab) {
+                        tabs.tabs("select", node.text);
+                    } else {
+                        tabs.tabs('add', {
+                            title: node.text,
+                            href: node.attributes.url,
+                            closable: true,
+                            bodyCls: "content"
+                        });
+                    }
+                }
+            }
+        });
+    });
+    setInterval("document.getElementById('nowTime').innerHTML=new Date().toLocaleString()+' 星期'+'日一二三四五六'.charAt(new Date().getDay());", 1000);
+</script>
+</body>
+</html>
