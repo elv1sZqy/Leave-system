@@ -44,11 +44,11 @@ public class MailUtil {
         try {
             //发送人邮箱,收信人邮箱,收信人的称呼,内容,标题
             MimeMessage message = creatMimeMessage(session,
-                    "1120280983@qq.com", receive,receiver,content,subject);
+                    "xxxx@qq.com", receive,receiver,content,subject);
             //rcjuqnheuxqaighf   授权码
             Transport transport = session.getTransport("smtp");
             //连接
-            transport.connect("1120280983@qq.com","phiyvuebtvnuheij");
+            transport.connect("xxxx@qq.com","xxxx");
             //发送
             transport.sendMessage(message, message.getAllRecipients());
             //关闭
